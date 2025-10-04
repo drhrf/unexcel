@@ -1,0 +1,117 @@
+---
+title: "Getting Started with unexcel"
+author: "Hercules Freitas"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+    %\VignetteIndexEntry{Getting Started with unexcel}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+Spreadsheets such as Microsoft Excel and LibreOffice Calc often auto-convert entries like 30.3 into dates. When imported into R, these values appear as Excel date serials (integers) instead of the intended numeric values.
+
+For example:
+- In Excel, 30.3 might be stored as 45812, which represents 2025-03-30 in the 1900 date system.
+- What the user originally wanted was simply 30.3.
+
+The unexcel package provides tools to safely detect these cases and reconstruct the originally intended day.month numerics. Non-serial values are preserved, and both the 1900 and 1904 date systems are supported.
+
+# Excel date systems
+
+Excel represents dates as the number of days since an origin date.
+- 1900 system: Day 1 is 1900-01-01. Excel mistakenly treats 1900 as a leap year. To compensate, R and most packages use "1899-12-30" as the origin, so calculations align with Excel’s behavior.
+- 1904 system: Day 0 is 1904-01-01, historically used by older Mac versions of Excel.
+
+Example:
+
+```{r}
+as.Date(45812, origin = "1899-12-30")
+#> "2025-03-30"
+```
+
+Here, 45812 is the serial for March 30, 2025.
+
+# The 1900 leap-year bug
+
+Excel was originally designed to be compatible with Lotus 1-2-3, which treated 1900 as a leap year (incorrectly). This means Excel includes the non-existent date 1900-02-29 in its calendar.
+
+To correct for this, R uses an origin of "1899-12-30" rather than "1900-01-01". This offset ensures that serial numbers map correctly to the dates displayed inside Excel.
+
+# Reconstructing day.month numerics
+
+The function restore_day_month() converts Excel serials back into numerics of the form day.month.
+
+```{r}
+library(unexcel)
+
+# Mixed vector: two serials + one real number
+x <- c(45812, 12.5, 44730)
+
+restore_day_month(x, origin_mode = "1900")
+#> [1] 30.3 12.5 15.6
+```
+
+Explanation:
+- 45812 (2025-03-30) → 30.3
+- 44730 (2022-06-15) → 15.6
+- 12.5 (not a serial) → preserved as 12.5
+
+# Guardrails against false conversions
+
+To avoid changing ordinary numbers, unexcel applies guardrails:
+- Only integer-like values are considered potential serials.
+- Values must fall in a plausible range (20000–65000, roughly 1954–2078).
+- The converted year must lie inside a configurable year_window (default: 1990–2035).
+
+Anything outside these conditions is left unchanged.
+
+# Difference from formatted strings
+
+By design, unexcel reconstructs numeric day.month values, not character strings:
+- Numeric output: 30.3 (easily compared or plotted).
+- Character output: "30/03" (typical formatted date).
+
+If you prefer a string, you can use R’s base functions:
+
+```{r}
+format(as.Date(45812, origin = "1899-12-30"), "%d/%m")
+#> "30/03"
+```
+
+But the goal of unexcel is to give you back the numeric decimal you originally typed in Excel.
+
+# Working with data frames
+
+The helper fix_serial_columns() scans an entire data frame and corrects only the columns that appear dominated by Excel serials.
+
+```{r}
+df <- data.frame(
+  a = c(45812, 44730, 45900),
+  b = c(1.2, 3.4, 5.6)
+)
+
+fix_serial_columns(df, origin_mode = "1900")
+#>      a   b
+#> 1 30.3 1.2
+#> 2 15.6 3.4
+#> 3 19.4 5.6
+```
+
+Column a was fixed; column b was left untouched.
+
+# Summary
+
+- Excel stores dates as day counts since 1900-01-01 or 1904-01-01.
+- Due to a leap-year bug, R uses "1899-12-30" as the origin for 1900-system serials.
+- The package reconstructs numeric day.month values that users originally typed, while leaving unrelated numbers intact.
+- Guardrails ensure safety and prevent over-conversion.
+- Use restore_day_month() for vectors and fix_serial_columns() for data frames.
+
+# Session information
+
+```{r}
+sessionInfo()
+```

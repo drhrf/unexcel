@@ -1,0 +1,25 @@
+Package: unexcel
+Title: Revert Excel Serial Dates Back to Intended Day.Month Numerics
+Version: 0.1.0
+Authors@R: 
+    person("Hercules", "Freitas", email = "hercules.freitas@uerj.br", 
+            role = c("aut","cre"),
+            comment = c(ORCID = "0000-0003-1584-9157"))
+Description: Detects values imported from spreadsheets that were auto-converted 
+    to Excel date serials and reconstructs the originally intended day.month
+    decimals (for example, '30.3' that Excel displayed as '30/03/2025').
+    The functions work in a vectorized manner, preserve non-serial values, and 
+    support both the 1900 and 1904 date systems.
+License: MIT + file LICENSE
+Depends: R (>= 3.6)
+Suggests: 
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+URL: https://github.com/drhrf/unexcel
+BugReports: https://github.com/drhrf/unexcel/issues
+Language: en-US

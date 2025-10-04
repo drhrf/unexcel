@@ -1,0 +1,26 @@
+# unexcel
+
+Detect and revert spreadsheet auto-converted Excel date serials back to the intended `day.month` numerics.  
+
+This package provides functions to identify values imported as Excel date serials (for example, `45812` representing 2025-03-30) and reconstruct the original numeric entry such as `30.3`. Non-serial values are preserved, and both the 1900 and 1904 date systems are supported.
+
+## Installation
+
+You can install the development version from GitHub with:
+
+```r
+# install.packages("remotes")
+remotes::install_github("drhrf/unexcel")
+```
+
+## Example
+
+```r
+library(unexcel)
+
+# 45812 is 2025-03-30 in Excel's 1900 system
+x <- c(45812, 12.5, 44730)
+
+restore_day_month(x, origin_mode = "1900")
+#> [1] 30.3 12.5 15.6
+```
