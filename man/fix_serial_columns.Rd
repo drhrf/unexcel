@@ -42,3 +42,7 @@ The data frame with corrected columns where applicable.
 Applies \code{restore_day_month()} only to columns that look dominated by
 Excel serials, controlled by a minimum fraction threshold.
 }
+\examples{
+df <- data.frame(a = c(45812, 44730), b = c(1.2, 3.4))
+fix_serial_columns(df)
+}

@@ -33,8 +33,8 @@ chosen; the reference can be controlled via \code{ref_date} for tests.}
 Defaults to Sys.Date(); set to a fixed Date in tests for determinism.}
 }
 \value{
-A numeric vector when a safe numeric coercion is possible, otherwise
-a character vector with replacements applied.
+Returns a numeric vector when restoration is unambiguous; otherwise
+character vector, preserving both restored and untouched values.
 }
 \description{
 Many spreadsheets auto-convert entries like '30.3' into dates. After import,
@@ -44,4 +44,5 @@ leaving other entries intact. Both 1900 and 1904 systems are supported.
 }
 \examples{
 restore_day_month(c(45812, 12.5, 44730), origin_mode = "1900")
+restore_day_month(c(45812, 44730), origin_mode = "auto")
 }
